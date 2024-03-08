@@ -53,7 +53,7 @@ function main_loop() {
     goal=$(shuf -n 1 $word_file)
 
     while true; do
-        read -p "Guess a five-letter word: " input
+        read -r -p "Guess a five-letter word: " input
 
         if ! [[ "$input" =~ ^[a-zA-Z]{5}$ ]]; then
             print_line "\e[31mGuess must be five characters from the English alphabet\e[0m"
