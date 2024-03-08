@@ -4,6 +4,14 @@ total_guesses=6
 guesses=()
 goal=""
 
+function blank_line() {
+    printf "\n"
+}
+
+function print_line() {
+    printf "$1\n"
+}
+
 function highlight_characters_matching_goal() {
     local guess="$1"
 
@@ -12,32 +20,31 @@ function highlight_characters_matching_goal() {
         local goal_character="${goal:$i:1}"
 
         if [[ $guess_character = $goal_character ]]; then
-            echo -ne "\e[42;30m$guess_character\e[0m"
+            printf "\e[42;30m$guess_character\e[0m"
         elif [[ $goal == *"$guess_character"* ]]; then
-            echo -ne "\e[43;30m$guess_character\e[0m"
+            printf "\e[43;30m$guess_character\e[0m"
         else
-            echo -n $guess_character
+            printf "$guess_character"
         fi
     done
 
-    # Print trailing newline
-    echo
+    blank_line
 }
 
 function print_all_guesses() {
-    echo
+    blank_line
 
     for ((i = 0; i < $total_guesses; i++)); do
         local guess=${guesses[$i]}
 
        if [[ -z "$guess" ]]; then
-           echo "____"
+           print_line "_____"
        else
-           echo -e "$guess"
+           print_line "$guess"
        fi 
     done
 
-    echo
+    blank_line
 }
 
 function main_loop() {
@@ -49,14 +56,14 @@ function main_loop() {
         read -p "Guess a five-letter word: " input
 
         if ! [[ "$input" =~ ^[a-zA-Z]{5}$ ]]; then
-            echo -e "\e[31mGuess must be five characters from the English alphabet\e[0m"
+            print_line "\e[31mGuess must be five characters from the English alphabet\e[0m"
             continue
         fi
 
-        local guess=${input^^}
+        local guess=$(printf "$input" | tr '[:lower:]' '[:upper:]')
 
         if ! grep -q "^$guess$" $word_file; then
-            echo -e "\e[31mGuess not found in word list\e[0m"
+            print_line "\e[31mGuess not found in word list\e[0m"
             continue;
         fi
 
@@ -67,10 +74,10 @@ function main_loop() {
         print_all_guesses
 
         if [[ $guess = $goal ]]; then
-            echo "Solved in ${#guesses[@]} guesses"
+            print_line "Solved in ${#guesses[@]} guesses"
             exit 0
         elif [[ ${#guesses[@]} -eq $total_guesses ]]; then
-            echo "Sorry, you failed to find the word, which was '$goal'"
+            print_line "Sorry, you failed to find the word, which was '$goal'"
             exit 1
         fi
     done
